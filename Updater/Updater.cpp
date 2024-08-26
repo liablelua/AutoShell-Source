@@ -200,11 +200,8 @@ bool DeleteFileFromPath(const std::wstring& filePath) {
     else {
         DWORD errorCode = GetLastError();
         if (errorCode == ERROR_ACCESS_DENIED || errorCode == ERROR_SHARING_VIOLATION) {
-            // File is in use, try to wait before attempting to delete again
             std::wcout << L"File is in use. Waiting before attempting to delete: " << filePath << std::endl;
-            Sleep(5000);  // Wait for 5 seconds
-
-            // Attempt to delete again
+            Sleep(5000);
             if (DeleteFile(filePath.c_str())) {
                 std::wcout << L"File deleted successfully after waiting: " << filePath << std::endl;
                 return true;
