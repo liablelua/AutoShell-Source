@@ -8,6 +8,8 @@
 #include <string>
 #include <Psapi.h>
 #include <cstdio>
+#include <shlobj.h>
+#include <filesystem>
 #pragma comment(lib, "Urlmon.lib")
 
 bool RegisterFileAssociation(const std::wstring& extension, const std::wstring& fileType, const std::wstring& description, const std::wstring& appPath, const std::wstring& iconPath) {
@@ -200,11 +202,8 @@ bool DeleteFileFromPath(const std::wstring& filePath) {
     else {
         DWORD errorCode = GetLastError();
         if (errorCode == ERROR_ACCESS_DENIED || errorCode == ERROR_SHARING_VIOLATION) {
-            // File is in use, try to wait before attempting to delete again
             std::wcout << L"File is in use. Waiting before attempting to delete: " << filePath << std::endl;
-            Sleep(5000);  // Wait for 5 seconds
-
-            // Attempt to delete again
+            Sleep(5000);
             if (DeleteFile(filePath.c_str())) {
                 std::wcout << L"File deleted successfully after waiting: " << filePath << std::endl;
                 return true;

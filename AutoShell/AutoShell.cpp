@@ -7,6 +7,7 @@
 #include <urlmon.h>
 #include <zip.h>
 #include <vector>
+#include <sstream>
 
 #pragma comment(lib, "Urlmon.lib")
 #pragma comment(lib, "Shell32.lib")
@@ -17,6 +18,7 @@ using namespace std;
 char Path[255] = "";
 string Command = "";
 bool Outputs = false;
+bool CantRun = false;
 
 vector<string> split(const string& s, const string& delimiter) {
     size_t pos_start = 0, pos_end, delim_len = delimiter.length();
@@ -335,7 +337,10 @@ void run(vector<string> Cmd) {
                         if (line != "\\n" && line != " ") { 
                             cout << line << endl;
                             vector<string> Cmd = split(line, " ");
-                            run(Cmd);
+                            if (!CantRun) { run(Cmd); }
+                            if (Cmd[0] == "]]") {
+                                CantRun = false;
+                            }
                         }
                     }
 
@@ -359,8 +364,7 @@ void run(vector<string> Cmd) {
             cout << "Usage: start <filename>" << endl;
         }
     }
-
-    
+   
     if (Cmd[0] == "webdl") {
         commandUsed = true;
         if (Cmd.size() == 3) {
@@ -426,6 +430,20 @@ void run(vector<string> Cmd) {
         commandUsed = true;
     }
 
+    if (Cmd[0] == "--[[") {
+        commandUsed = true;
+        CantRun = true;
+    }
+
+    if (Cmd[0] == "]]") {
+        commandUsed = true;
+        CantRun = false;
+    }
+
+    if (Cmd[0] == "" || Cmd[0] == " " || Cmd[0] == "\\n") {
+        commandUsed = true;
+    }
+    
     if (!commandUsed) {
         cout << "Command " << Cmd[0] << " doesn't exist." << endl;
     }
@@ -436,7 +454,10 @@ void Loop() {
         Command = "";
         getline(cin, Command);
         vector<string> Cmd = split(Command, " ");
-        run(Cmd);
+        if (!CantRun) { run(Cmd); }
+        if (Cmd[0] == "]]") {
+            CantRun = false;
+        }
         cout << endl;
     }
 }
@@ -450,9 +471,12 @@ void run_as(string fp) {
 
     string line;
     while (getline(inputFile, line)) {
-        if (line != "\\n" && line != " ") {
+        if (line != "\\n" && line != " " && line != "") {
             vector<string> Cmd = split(line, " ");
-            run(Cmd);
+            if (!CantRun) { run(Cmd); }
+            if (Cmd[0] == "]]") {
+                CantRun = false;
+            }
         }
     }
 
@@ -492,7 +516,7 @@ int main(int argc, char* argv[]) {
         string ThePath = Path;
         ThePath = ThePath + "Updater.exe";
         ShellExecute(NULL, _T("open"), string_to_wstring(ThePath).c_str(), NULL, NULL, SW_SHOWNORMAL);
-        cout << "AutoShell v1.0.0\n\n";
+        cout << "AutoShell v1.1.0\n\n";
         Loop();
     }
 }
